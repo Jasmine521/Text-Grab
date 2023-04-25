@@ -369,7 +369,7 @@
             <Border Grid.Row="2" Background="{StaticResource DarkBackground}">
                 <Grid
                     Height="30"
-                    Margin="6,0,6,142"
+                    Margin="6,0,6,112"
                     HorizontalAlignment="Stretch"
                     >
                     <Grid.ColumnDefinitions>
@@ -590,7 +590,7 @@
                         <ColumnDefinition Width="auto" />
                         <ColumnDefinition Width="110" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock x:Name="OcrResultTextBlock" TextWrapping="Wrap" FontWeight="Bold" Foreground="White" Background="Black"/>
+                    <TextBlock x:Name="OcrResultTextBlock" TextWrapping="Wrap" FontWeight="Bold" Foreground="White" Background="Black" FontSize="20"/>
                 </Grid>
             </Border>
 

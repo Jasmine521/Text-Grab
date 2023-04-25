@@ -29,6 +29,10 @@ using Windows.Media.Ocr;
 using Windows.System;
 using ZXing;
 using ZXing.Windows.Compatibility;
+using System.Net.Http;
+using Newtonsoft.Json.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Text_Grab.Views;
 
@@ -99,8 +103,66 @@ public partial class GrabFrame : Window
         GetGrabFrameUserSettings();
         SetRefreshOrOcrFrameBtnVis();
         OcrResultTextBlock.Text = "wochaole zhende fule你个老六";
+        var timer = new System.Windows.Threading.DispatcherTimer();
+        timer.Tick += new EventHandler(timer_Tick);
+        timer.Interval = new TimeSpan(0, 0, 5); // 每隔2秒执行一次
+        timer.Start();
+
 
         this.DataContext = this;
+    }
+    private void timer_Tick(object sender, EventArgs e)
+    {
+        if (!IsLoaded || IsFreezeMode || isMiddleDown)
+            return;
+
+        ResetGrabFrame();
+        reDrawTimer.Stop();
+        reDrawTimer.Start();
+    }
+
+     private static readonly HttpClient client = new HttpClient();
+    private static readonly string appId = "20230424001653618";
+    private static readonly string secretKey = "xLKY5ry0mcMXstmludjv";
+
+    public static string Translate(string inputText)
+    {
+        var salt = DateTime.Now.Millisecond.ToString();
+        var sign = EncryptString($"{appId}{inputText}{salt}{secretKey}");
+        var url = $"https://fanyi-api.baidu.com/api/trans/vip/translate?q={inputText}&from=auto&to=zh&appid={appId}&salt={salt}&sign={sign}";
+
+        var response = client.GetAsync(url).Result;
+        var responseJson = JObject.Parse(response.Content.ReadAsStringAsync().Result);
+        
+        if (responseJson["error_code"] != null && (int)responseJson["error_code"] != 0) {
+            // 翻译请求出现错误
+            // 错误信息可以通过 responseJson["error_msg"] 获取
+            return ($"翻译请求出现错误：{responseJson["error_msg"]}");
+        } else {
+            // 翻译请求成功，可以从 responseJson 中获取翻译结果
+            var translation = responseJson["trans_result"][0]["dst"].ToString();
+            return ($"翻译结果：{translation}");
+        }
+
+        
+    }
+
+    private static string EncryptString(string inputString)
+    {
+        // 签名算法可以在百度翻译API的官方文档中查找
+        // 这里只提供一个简单的示例
+        using (var md5 = MD5.Create())
+            {
+                var inputBytes = Encoding.UTF8.GetBytes(inputString);
+                var hashBytes = md5.ComputeHash(inputBytes);
+
+                var sb = new StringBuilder();
+                foreach (var b in hashBytes)
+                {
+                    sb.Append(b.ToString("x2"));
+                }
+                return sb.ToString();
+            }
     }
 
     #endregion Constructors
@@ -338,7 +400,7 @@ public partial class GrabFrame : Window
     public void MergeSelectedWordBorders()
     {
         RectanglesCanvas.ContextMenu.IsOpen = false;
-        FreezeGrabFrame();
+        // FreezeGrabFrame();
 
         List<WordBorder> selectedWordBorders = wordBorders.Where(w => w.IsSelected).OrderBy(o => o.Left).ToList();
 
@@ -790,7 +852,7 @@ public partial class GrabFrame : Window
         System.Drawing.Rectangle rectCanvasSize = new System.Drawing.Rectangle
         {
             Width = (int)((ActualWidth + 2) * dpi.DpiScaleX),
-            Height = (int)((ActualHeight - 64) * dpi.DpiScaleY),
+            Height = (int)((ActualHeight - 164) * dpi.DpiScaleY),
             X = (int)((windowPosition.X - 2) * dpi.DpiScaleX),
             Y = (int)((windowPosition.Y + 24) * dpi.DpiScaleY)
         };
@@ -1110,18 +1172,22 @@ public partial class GrabFrame : Window
 
     private void GrabFrameWindow_Deactivated(object? sender, EventArgs e)
     {
-        if (!IsWordEditMode && !IsFreezeMode)
-        {
-            ResetGrabFrame();
-            return;
-        }
+        // if (!IsWordEditMode && !IsFreezeMode)
+        // {
+        //     ResetGrabFrame();
+        //     return;
+        // }
 
-        RectanglesCanvas.Opacity = 1;
-        if (Keyboard.Modifiers != ModifierKeys.Alt)
-            wasAltHeld = false;
+        // RectanglesCanvas.Opacity = 1;
+        // if (Keyboard.Modifiers != ModifierKeys.Alt)
+        //     wasAltHeld = false;
 
-        if (AutoOcrCheckBox.IsChecked is true)
-            FreezeGrabFrame();
+        // if (AutoOcrCheckBox.IsChecked is true)
+        //     FreezeGrabFrame();
+        ResetGrabFrame();
+        
+        reDrawTimer.Stop();
+        reDrawTimer.Start();
     }
 
     private void GrabFrameWindow_DragLeave(object sender, DragEventArgs e)
@@ -1468,8 +1534,8 @@ public partial class GrabFrame : Window
         }
 
         FreezeToggleButton.IsChecked = true;
-        FreezeGrabFrame();
-        FreezeToggleButton.Visibility = Visibility.Collapsed;
+        // FreezeGrabFrame();
+        // FreezeToggleButton.Visibility = Visibility.Collapsed;
 
         reDrawTimer.Start();
     }
@@ -1545,7 +1611,7 @@ public partial class GrabFrame : Window
 
         if (movingWordBordersDictionary.Count > 0)
         {
-            FreezeGrabFrame();
+            // FreezeGrabFrame();
             MoveAllWordBorders(movingPoint);
             return;
         }
@@ -1579,7 +1645,7 @@ public partial class GrabFrame : Window
         if (e.ChangedButton == MouseButton.Middle)
         {
             isMiddleDown = false;
-            FreezeGrabFrame();
+            // FreezeGrabFrame();
             reDrawTimer.Start();
             return;
         }
@@ -1854,8 +1920,8 @@ public partial class GrabFrame : Window
             BitmapImage droppedImage = new(fileURI);
             frameContentImageSource = droppedImage;
             FreezeToggleButton.IsChecked = true;
-            FreezeGrabFrame();
-            FreezeToggleButton.Visibility = Visibility.Collapsed;
+            // FreezeGrabFrame();
+            // FreezeToggleButton.Visibility = Visibility.Collapsed;
         }
         catch (Exception)
         {
@@ -2012,6 +2078,7 @@ public partial class GrabFrame : Window
 
         FrameText = stringBuilder.ToString();
         OcrResultTextBlock.Text = FrameText.Replace(Environment.NewLine, "");
+        OcrResultTextBlock.Text = Translate(OcrResultTextBlock.Text);
 
         if (string.IsNullOrEmpty(FrameText))
             GrabBTN.IsEnabled = false;
