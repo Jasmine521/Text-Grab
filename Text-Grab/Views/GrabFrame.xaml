@@ -87,7 +87,7 @@
             </Grid.RowDefinitions>
             <Grid
                 Grid.Row="0"
-                Grid.RowSpan="3"
+                Grid.RowSpan="4"
                 VerticalAlignment="Top"
                 Background="{StaticResource DarkBackground}">
                 <Grid.ColumnDefinitions>
@@ -369,9 +369,9 @@
             <Border Grid.Row="2" Background="{StaticResource DarkBackground}">
                 <Grid
                     Height="30"
-                    Margin="6"
+                    Margin="6,0,6,142"
                     HorizontalAlignment="Stretch"
-                    VerticalAlignment="Bottom">
+                    >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="auto" />
                         <ColumnDefinition Width="*" />
@@ -560,6 +560,10 @@
                             ToolTip="Open Text Grab Settings"
                             Visibility="Collapsed" />
                     </StackPanel>
+                    
+
+
+
 
                     <controls:CollapsibleButton
                         x:Name="GrabBTN"
@@ -573,6 +577,23 @@
                         ToolTip="Grab text in the Grab Frame" />
                 </Grid>
             </Border>
+            <Border Grid.Row="3" >
+                <Grid
+                    Height="100"
+                    Margin="6"
+                    VerticalAlignment="Bottom">
+                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="auto" />
+                        <ColumnDefinition Width="110" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="OcrResultTextBlock" TextWrapping="Wrap" FontWeight="Bold" Foreground="White" Background="Black"/>
+                </Grid>
+            </Border>
+
         </Grid>
     </Border>
 </Window>

@@ -98,6 +98,7 @@ public partial class GrabFrame : Window
 
         GetGrabFrameUserSettings();
         SetRefreshOrOcrFrameBtnVis();
+        OcrResultTextBlock.Text = "wochaole zhende fule你个老六";
 
         this.DataContext = this;
     }
@@ -1961,6 +1962,8 @@ public partial class GrabFrame : Window
             double top = minPoint.Y / (dpi.DpiScaleY) - 6;
             Canvas.SetLeft(wb, left);
             Canvas.SetTop(wb, top);
+            // OcrResultTextBlock.Text = result.Text ;
+        
         }
     }
 
@@ -1993,6 +1996,7 @@ public partial class GrabFrame : Window
 
         StringBuilder stringBuilder = new();
 
+
         if (TableToggleButton.IsChecked is true)
         {
             TryToPlaceTable();
@@ -2007,6 +2011,7 @@ public partial class GrabFrame : Window
         }
 
         FrameText = stringBuilder.ToString();
+        OcrResultTextBlock.Text = FrameText.Replace(Environment.NewLine, "");
 
         if (string.IsNullOrEmpty(FrameText))
             GrabBTN.IsEnabled = false;
